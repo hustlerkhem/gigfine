@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problem Board</title>
+    <!-- Bootstrap 5 for Responsive Design -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 
+         * GLOBAL COLOR & SIZING RULES
+         * Everything blue, text black, bigger sizes.
+         */
+        * { 
+            color: black !important; 
+        }
+        
+        body { 
+            background-color: #0d6efd; /* Strong Blue */
+            height: 100vh; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            font-size: 1.3rem; /* Much bigger base font size */
+            font-family: system-ui, -apple-system, sans-serif;
+        }
+        
+        .navbar { 
+            flex-shrink: 0; 
+            background-color: #0d6efd !important;
+            padding: 15px 0;
+        }
+        
+        .navbar-brand {
+            font-size: 2rem !important;
+            font-weight: 900 !important;
+        }
+
+        /* The White Screen Section */
+        .screen-section {
+            background-color: white; 
+            border-radius: 20px;
+            flex-grow: 1; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            padding: 20px;
+            margin: 15px auto;
+            width: 95%;
+            max-width: 1200px;
+            border: 4px solid black; /* Bold outlines */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .view-section { display: none; height: 100%; flex-direction: column; overflow: hidden; }
+        .view-section.active { display: flex; }
+        .scrollable-view { overflow-y: auto; padding: 10px; }
+
+        /* Custom Scrollbar for the feed container */
+        #feed-container::-webkit-scrollbar { width: 12px; }
+        #feed-container::-webkit-scrollbar-thumb { background-color: #0d6efd; border-radius: 6px; border: 2px solid white; }
+
+        /* Problem Cards Styling */
+        .post-card { 
+            transition: transform 0.2s, box-shadow 0.2s; 
+            cursor: pointer; 
+            background-color: #e6f0ff !important; 
+            border: 4px solid #0d6efd !important;
+            border-radius: 15px;
+        }
+        .post-card:hover { 
+            transform: translateY(-4px); 
+            box-shadow: 0 8px 20px rgba(13, 110, 253, 0.3) !important; 
+        }
+        
+        .card-footer {
+            background-color: #cce0ff !important;
+            border-top: 4px solid #0d6efd !important;
+            border-bottom-left-radius: 10px !important;
+            border-bottom-right-radius: 10px !important;
+        }
+
+        .copy-text { 
+            cursor: pointer; 
+            user-select: none; 
+            transition: 0.2s; 
+            display: inline-block;
+            background-color: #e6f0ff;
+            padding: 8px 15px;
+            border: 3px solid #0d6efd;
+            border-radius: 10px;
+        }
+        .copy-text:hover { background-color: #cce0ff; }
+
+        /* Enlarged Buttons & Inputs */
+        .btn {
+            font-weight: 800 !important;
+            border: 3px solid black !important;
+            border-radius: 12px !important;
+            font-size: 1.4rem !important;
+            padding: 12px 25px;
+        }
+        .btn-primary { background-color: #0d6efd !important; }
+        .btn-primary:hover { background-color: #0b5ed7 !important; }
+        
+        .form-control {
+            border: 4px solid #0d6efd !important;
+            font-size: 1.4rem !important;
+            padding: 15px !important;
+            border-radius: 12px !important;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container d-flex justify-content-between align-items-center">
+            <a class="navbar-brand" href="#" onclick="showView('feed')">Gig Fine</a>
+            <div id="nav-actions">
+                <!-- Buttons injected by JS based on login/register status -->
+            </div>
+        </div>
+    </nav>
+
+    <!-- The Central White Screen Section -->
+    <div class="screen-section">
+        
+        <!-- 1. FEED VIEW (Shows all problems) -->
+        <div id="view-feed" class="view-section active">
+            <h1 class="mb-4 text-center flex-shrink-0 fw-bold" style="font-size: 2.5rem; text-decoration: underline;">Recent Problems</h1>
+            
+            <div class="row justify-content-center flex-grow-1 overflow-hidden m-0">
+                <div class="col-md-10 d-flex flex-column h-100 p-0">
+                    
+                    <!-- SCROLLABLE: Feed Container -->
+                    <div id="feed-container" class="flex-grow-1 overflow-auto pe-3 pb-2">
+                        <!-- Posts will be injected here by JS -->
+                    </div>
+                    
+                    <!-- STICKY: Post a Problem Action Container at the bottom -->
+                    <div id="post-action-container" class="text-center mt-3 flex-shrink-0 p-4" style="background-color: #e6f0ff; border: 4px solid black; border-radius: 15px;">
+                        <!-- Button/Login text injected here by JS -->
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. LOGIN VIEW -->
+        <div id="view-login" class="view-section scrollable-view">
+            <div class="row justify-content-center pt-4">
+                <div class="col-md-8">
+                    <div class="card shadow-lg border-0" style="background-color: #e6f0ff; border: 4px solid #0d6efd !important; border-radius: 15px;">
+                        <div class="card-body p-5">
+                            <h1 class="card-title text-center mb-5 fw-bold" style="font-size: 2.5rem;">Login</h1>
+                            <div id="login-error" class="alert fw-bold d-none fs-4" style="background-color: #ffcccc; border: 3px solid red;"></div>
+                            
+                            <form id="form-login">
+                                <div class="mb-5">
+                                    <label class="fw-bold mb-3" style="font-size: 1.8rem;">Password</label>
+                                    <input type="password" id="login-password" class="form-control form-control-lg" required placeholder="Enter your password...">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-3" style="font-size: 1.8rem !important;">Login</button>
+                            </form>
+                            
+                            <!-- Dynamic text injected by JS based on registration status -->
+                            <div id="login-reg-link" class="mt-4 text-center fw-bold fs-4"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. REGISTER VIEW -->
+        <div id="view-register" class="view-section scrollable-view">
+            <div class="row justify-content-center pt-4">
+                <div class="col-md-8">
+                    <div class="card shadow-lg border-0" style="background-color: #e6f0ff; border: 4px solid #0d6efd !important; border-radius: 15px;">
+                        <div class="card-body p-5">
+                            <h1 class="card-title text-center mb-5 fw-bold" style="font-size: 2.5rem;">Register App Password</h1>
+                            <div id="register-error" class="alert fw-bold d-none fs-4" style="background-color: #ffcccc; border: 3px solid red;"></div>
+                            
+                            <form id="form-register">
+                                <div class="mb-5">
+                                    <label class="fw-bold mb-3" style="font-size: 1.8rem;">Create a Global Password</label>
+                                    <input type="password" id="reg-password" class="form-control form-control-lg" required placeholder="Type a strong password...">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-3" style="font-size: 1.8rem !important;">Register Password</button>
+                            </form>
+                            
+                            <div class="mt-4 text-center fw-bold fs-4">
+                                Already have a password? <a href="#" onclick="showView('login')" style="text-decoration: underline;">Login here</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. UPDATE PASSWORD VIEW -->
+        <div id="view-update-pw" class="view-section scrollable-view">
+            <div class="row justify-content-center pt-4">
+                <div class="col-md-8">
+                    <div class="card shadow-lg border-0" style="background-color: #e6f0ff; border: 4px solid #0d6efd !important; border-radius: 15px;">
+                        <div class="card-body p-5">
+                            <h1 class="card-title text-center mb-5 fw-bold" style="font-size: 2.5rem;">Update Password</h1>
+                            <div id="update-pw-error" class="alert fw-bold d-none fs-4" style="background-color: #ffcccc; border: 3px solid red;"></div>
+                            
+                            <form id="form-update-pw">
+                                <div class="mb-4">
+                                    <label class="fw-bold mb-3" style="font-size: 1.8rem;">Current Password</label>
+                                    <input type="password" id="update-old-pw" class="form-control form-control-lg" required placeholder="Enter current password...">
+                                </div>
+                                <div class="mb-5">
+                                    <label class="fw-bold mb-3" style="font-size: 1.8rem;">New Password</label>
+                                    <input type="password" id="update-new-pw" class="form-control form-control-lg" required placeholder="Enter new password...">
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100 py-3" style="font-size: 1.8rem !important;">Update Password</button>
+                            </form>
+                            
+                            <div class="mt-4 text-center fw-bold fs-4">
+                                <a href="#" onclick="showView('login')" style="text-decoration: underline;">Cancel and return to Login</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. POST PROBLEM VIEW -->
+        <div id="view-post" class="view-section scrollable-view">
+            <div class="row justify-content-center pt-4">
+                <div class="col-md-10">
+                    <div class="card shadow-lg" style="border: 4px solid black; border-radius: 15px; overflow: hidden;">
+                        <div class="card-header p-4" style="background-color: #0d6efd;">
+                            <h1 class="mb-0 fw-bold text-center">Share your problem</h1>
+                        </div>
+                        <div class="card-body p-5" style="background-color: #e6f0ff;">
+                            <form id="form-post">
+                                <div class="mb-5">
+                                    <label class="form-label fw-bold mb-3" style="font-size: 1.8rem;">What problem are you facing?</label>
+                                    <textarea id="post-text" class="form-control" rows="6" required placeholder="Describe your problem here in detail..."></textarea>
+                                </div>
+                                <div class="d-flex gap-4">
+                                    <button type="submit" class="btn btn-primary flex-grow-1 py-3" style="font-size: 1.8rem !important;">Submit Post</button>
+                                    <button type="button" class="btn flex-grow-1 py-3" style="background-color: white; font-size: 1.8rem !important;" onclick="showView('feed')">Cancel</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main JavaScript Logic -->
+    <script>
+        // --- 1. Database Simulation (LocalStorage) ---
+        function getDB(key) {
+            return JSON.parse(localStorage.getItem(key)) || [];
+        }
+        function saveDB(key, data) {
+            localStorage.setItem(key, JSON.stringify(data));
+        }
+
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+
+        // --- 2. UI Navigation & Authentication State ---
+        function updateNav() {
+            const navActions = document.getElementById('nav-actions');
+            const postActionContainer = document.getElementById('post-action-container');
+            const loginRegLink = document.getElementById('login-reg-link');
+            
+            // Check if ANY password has been registered yet
+            let users = getDB('users');
+            let isRegistered = users.length > 0;
+
+            if (currentUser) {
+                // Logged in Navigation
+                navActions.innerHTML = `
+                    <button class="btn me-3" style="background-color: white;" onclick="showView('update-pw')">Update Password</button>
+                    <button class="btn btn-primary" onclick="logout()">Logout</button>
+                `;
+                postActionContainer.innerHTML = `
+                    <button class="btn btn-primary w-100 py-3 shadow-sm fw-bold" style="font-size: 2rem !important;" onclick="showView('post')">
+                        ➕ Post a New Problem
+                    </button>
+                `;
+            } else {
+                // Logged out Navigation
+                let rightSideButton = isRegistered 
+                    ? `<button class="btn btn-primary" onclick="showView('update-pw')">Update Password</button>`
+                    : `<button class="btn btn-primary" onclick="showView('register')">Register</button>`;
+
+                navActions.innerHTML = `
+                    <button class="btn me-3" style="background-color: white;" onclick="showView('login')">Login</button>
+                    ${rightSideButton}
+                `;
+                postActionContainer.innerHTML = `
+                    <p class="m-0 fw-bold" style="font-size: 1.6rem;">Please <a href="#" onclick="showView('login')" style="text-decoration: underline;">login</a> to post a new problem.</p>
+                `;
+            }
+
+            // Update Login bottom text based on if system is Registered
+            if (loginRegLink) {
+                if (isRegistered) {
+                    loginRegLink.innerHTML = `Want to change access? <a href="#" onclick="showView('update-pw')" style="text-decoration: underline;">Update Password here</a>`;
+                } else {
+                    loginRegLink.innerHTML = `Don't have a password yet? <a href="#" onclick="showView('register')" style="text-decoration: underline;">Register here</a>`;
+                }
+            }
+        }
+
+        function showView(viewId) {
+            // Hide alerts every time views change
+            document.getElementById('login-error').classList.add('d-none');
+            document.getElementById('register-error').classList.add('d-none');
+            document.getElementById('update-pw-error').classList.add('d-none');
+
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            if(viewId === 'register') document.getElementById('form-register').reset();
+            if(viewId === 'login') document.getElementById('form-login').reset();
+            if(viewId === 'post') document.getElementById('form-post').reset();
+            if(viewId === 'update-pw') document.getElementById('form-update-pw').reset();
+
+            if(viewId === 'feed') renderFeed();
+        }
+
+        // --- 3. Registration Logic (Only 1 time) ---
+        document.getElementById('form-register').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let users = getDB('users');
+            
+            // Prevent multiple registrations entirely
+            if (users.length >= 1) {
+                alert("A password has already been registered! Please use 'Update Password' instead.");
+                showView('update-pw');
+                return;
+            }
+
+            const password = document.getElementById('reg-password').value.trim();
+            const newUser = { id: Date.now(), password: password };
+            
+            users.push(newUser);
+            saveDB('users', users);
+            
+            alert("App Password Registered Successfully! You can now login.");
+            updateNav();
+            showView('login');
+        });
+
+        // --- 4. Update Password Logic ---
+        document.getElementById('form-update-pw').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const oldPw = document.getElementById('update-old-pw').value.trim();
+            const newPw = document.getElementById('update-new-pw').value.trim();
+
+            let users = getDB('users');
+            if (users.length === 0) {
+                alert("No password registered yet!");
+                showView('register');
+                return;
+            }
+
+            // Verify current password
+            if (users[0].password !== oldPw) {
+                const err = document.getElementById('update-pw-error');
+                err.innerText = "Current password is incorrect!";
+                err.classList.remove('d-none');
+                return;
+            }
+
+            // Apply new password
+            users[0].password = newPw;
+            saveDB('users', users);
+            
+            alert("Password updated successfully! Please login using your new password.");
+            logout(); // Log out in case they were logged in, forcing a re-login
+            showView('login');
+        });
+
+        // --- 5. Login Logic ---
+        document.getElementById('form-login').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const password = document.getElementById('login-password').value.trim();
+
+            const users = getDB('users');
+            const user = users.find(u => u.password === password);
+
+            if (user) {
+                currentUser = { id: user.id };
+                localStorage.setItem('currentUser', JSON.stringify(currentUser));
+                updateNav();
+                showView('feed');
+            } else {
+                const err = document.getElementById('login-error');
+                err.innerText = "Invalid password!";
+                err.classList.remove('d-none');
+            }
+        });
+
+        function logout() {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            updateNav();
+            showView('feed');
+        }
+
+        // --- 6. Post Problem Logic ---
+        document.getElementById('form-post').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const text = document.getElementById('post-text').value.trim();
+
+            if (!currentUser) {
+                alert("Please login first!");
+                showView('login');
+                return;
+            }
+
+            let problems = getDB('problems');
+            
+            const newProblem = {
+                id: Date.now(),
+                userId: currentUser.id,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+
+            problems.push(newProblem);
+            saveDB('problems', problems);
+            showView('feed');
+        });
+
+        // --- 7. Copy Functionality Logic ---
+        function copyProblemText(id) {
+            const textElement = document.getElementById('text-' + id);
+            if (!textElement) return;
+
+            const rawText = decodeURIComponent(textElement.getAttribute('data-raw-text'));
+            
+            navigator.clipboard.writeText(rawText).then(() => {
+                const copyBtn = document.getElementById('copy-btn-' + id);
+                if(copyBtn) {
+                    copyBtn.innerHTML = "✅ Copied Successfully!";
+                    setTimeout(() => {
+                        copyBtn.innerHTML = "📋 Copy text";
+                    }, 2000);
+                }
+            }).catch(err => {
+                console.error("Failed to copy text: ", err);
+            });
+        }
+
+        // --- 8. Render Feed Logic ---
+        function renderFeed() {
+            const container = document.getElementById('feed-container');
+            let problems = getDB('problems');
+
+            problems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            if (problems.length === 0) {
+                container.innerHTML = `<div class="p-5 text-center fw-bold" style="font-size: 1.8rem; background-color: #e6f0ff; border: 4px dashed #0d6efd; border-radius: 15px;">No problems have been posted yet. Be the first!</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            problems.forEach(post => {
+                const dateObj = new Date(post.timestamp);
+                const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+                const safeText = post.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                const encodedText = encodeURIComponent(post.text);
+
+                const card = `
+                    <div class="mb-5">
+                        <!-- 1. Copy text entirely outside the problem box (Made Bigger) -->
+                        <div class="text-end mb-2 pe-2">
+                            <span id="copy-btn-${post.id}" class="fw-bold copy-text" style="font-size: 1.2rem;" onclick="copyProblemText(${post.id})">
+                                📋 Copy text
+                            </span>
+                        </div>
+                        
+                        <!-- 2. The problem Box itself (Clickable) -->
+                        <div class="card shadow-sm post-card border-0" title="Click anywhere on the card to copy problem text" onclick="copyProblemText(${post.id})">
+                            <div class="card-body p-5">
+                                <p id="text-${post.id}" data-raw-text="${encodedText}" class="card-text fw-bold mb-0" style="font-size: 1.8rem; white-space: pre-wrap; line-height: 1.5;">"${safeText}"</p>
+                            </div>
+                            <div class="card-footer d-flex justify-content-between align-items-center p-4 border-top-0">
+                                <small style="font-size: 1.3rem;">
+                                    <strong>Anonymous User</strong> 
+                                </small>
+                                <small class="fw-bold" style="font-size: 1.3rem;">${formattedDate}</small>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // --- 9. Initialize App ---
+        updateNav();
+        showView('feed'); 
+    </script>
+</body>
+</html>
