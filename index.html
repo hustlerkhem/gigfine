@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
+     <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-EJSP9205GT"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -268,15 +268,29 @@
                         </div>
                         <div class="card-body p-3 p-md-4" style="background-color: #e6f0ff;">
                             <form id="form-post">
-                                <div class="mb-4">
-                                    <label class="form-label fw-bold mb-2">What problem are you facing?</label>
-                                    <textarea id="post-text" class="form-control" rows="6" required placeholder="Describe your problem here in detail..."></textarea>
-                                </div>
-                                <div class="d-flex flex-column flex-sm-row gap-2 gap-md-3">
-                                    <button type="submit" class="btn btn-primary w-100">Submit Post</button>
-                                    <button type="button" class="btn w-100" style="background-color: white;" onclick="showView('feed')">Cancel</button>
-                                </div>
-                            </form>
+    <!-- NEW: Select Company Dropdown -->
+    <div class="mb-4">
+        <label class="form-label fw-bold mb-2">Which company is this regarding?</label>
+        <select id="post-company" class="form-select border border-3 border-primary" style="font-size: clamp(1rem, 3vw, 1.1rem); padding: 10px 12px; border-radius: 8px; font-weight: 600;" required>
+            <option value="" disabled selected>Select a company...</option>
+            <option value="Pathao">Pathao</option>
+            <option value="InDrive">InDrive</option>
+            <option value="Tootle">Tootle</option>
+            <option value="Sajilo">Sajilo</option>
+            <option value="JumJum">JumJum</option>
+            <option value="Other / General">Other / General</option>
+        </select>
+    </div>
+    
+    <div class="mb-4">
+        <label class="form-label fw-bold mb-2">What problem are you facing?</label>
+        <textarea id="post-text" class="form-control" rows="6" required placeholder="Describe your problem here in detail..."></textarea>
+    </div>
+    <div class="d-flex flex-column flex-sm-row gap-2 gap-md-3">
+        <button type="submit" class="btn btn-primary w-100">Submit Post</button>
+        <button type="button" class="btn w-100" style="background-color: white;" onclick="showView('feed')">Cancel</button>
+    </div>
+</form>
                         </div>
                     </div>
                 </div>
@@ -439,30 +453,33 @@
         }
 
         // --- 6. Post Problem Logic ---
-        document.getElementById('form-post').addEventListener('submit', function(e) {
-            e.preventDefault();
-            const text = document.getElementById('post-text').value.trim();
+        
+document.getElementById('form-post').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const company = document.getElementById('post-company').value; // Get selected company
+    const text = document.getElementById('post-text').value.trim();
 
-            if (!currentUser) {
-                alert("Please login first!");
-                showView('login');
-                return;
-            }
+    if (!currentUser) {
+        alert("Please login first!");
+        showView('login');
+        return;
+    }
 
-            let problems = getDB('problems');
-            
-            const newProblem = {
-                id: Date.now(),
-                userId: currentUser.id,
-                userName: currentUser.name, // Automatically uses registered name
-                text: text,
-                timestamp: new Date().toISOString()
-            };
+    let problems = getDB('problems');
+    
+    const newProblem = {
+        id: Date.now(),
+        userId: currentUser.id,
+        userName: currentUser.name,
+        company: company, // Save company data to LocalStorage
+        text: text,
+        timestamp: new Date().toISOString()
+    };
 
-            problems.push(newProblem);
-            saveDB('problems', problems);
-            showView('feed');
-        });
+    problems.push(newProblem);
+    saveDB('problems', problems);
+    showView('feed');
+});
 
         // --- 7. Copy Functionality Logic ---
         function copyProblemText(id) {
@@ -483,12 +500,12 @@
                 console.error("Failed to copy text: ", err);
             });
         }
-
-        // --- 8. Render Feed Logic ---
+// --- 8. Render Feed Logic ---
         function renderFeed() {
             const container = document.getElementById('feed-container');
             let problems = getDB('problems');
 
+            // Sort newest first
             problems.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             if (problems.length === 0) {
@@ -497,16 +514,24 @@
             }
 
             container.innerHTML = '';
+            
             problems.forEach(post => {
                 const dateObj = new Date(post.timestamp);
-                const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                const formattedDate = dateObj.toLocaleDateString() + ' ' + dateObj.toLocaleTimeString();
 
-                // Safely escape HTML to prevent cross-site scripting
+                // Safely escape HTML to prevent cross-site scripting in the UI
                 const safeText = post.text.replace(/</g, "&lt;").replace(/>/g, "&gt;");
                 const safeName = post.userName ? post.userName.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "Anonymous";
-                const encodedText = encodeURIComponent(post.text);
+                const safeCompany = post.company ? post.company.replace(/</g, "&lt;").replace(/>/g, "&gt;") : "General";
+                
+                // FORMAT CLIPBOARD DATA: Company Name on top, Message under it
+                const clipboardCompany = post.company || "General";
+                const textToCopy = clipboardCompany + "\n\n" + post.text; 
+                
+                // Encode the formatted text for the copy button
+                const encodedText = encodeURIComponent(textToCopy);
 
-                // Responsive Card Layout applied here
+                // Responsive Card Layout
                 const card = `
                     <div class="mb-3 mb-md-4">
                         <!-- 1. Copy text entirely outside the problem box -->
@@ -522,8 +547,9 @@
                                 <p id="text-${post.id}" data-raw-text="${encodedText}" class="card-text fw-bold mb-0 fs-6 fs-md-5" style="white-space: pre-wrap; line-height: 1.5;">"${safeText}"</p>
                             </div>
                             <div class="card-footer p-2 p-md-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-1">
-                                <small class="fs-6 text-break">
+                                <small class="fs-6 text-break d-flex align-items-center flex-wrap gap-2">
                                     <strong>${safeName}</strong> 
+                                    <span class="badge bg-primary text-white border border-dark border-1 px-2 py-1">${safeCompany}</span>
                                 </small>
                                 <small class="fw-bold fs-6" style="opacity: 0.8; font-size: 0.85rem !important;">${formattedDate}</small>
                             </div>
