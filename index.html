@@ -583,6 +583,13 @@ document.getElementById('form-post').addEventListener('submit', function(e) {
         // --- 9. Initialize App ---
         updateNav();
         showView('feed'); 
+
+         // --- NEW: Listen for the Mobile Back Button ---
+window.onpopstate = function(event) {
+    // If the user clicks back, always take them to the Feed
+    // instead of closing the app.
+    showView('feed');
+};
     </script>
 </body>
 </html>
