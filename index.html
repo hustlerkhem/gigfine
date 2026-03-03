@@ -377,22 +377,30 @@
             
         }
 
-        function showView(viewId) {
-            // Hide alerts every time views change
-            document.getElementById('login-error').classList.add('d-none');
-            document.getElementById('register-error').classList.add('d-none');
-            document.getElementById('update-pw-error').classList.add('d-none');
+       function showView(viewId) {
+    // 1. Hide alerts
+    document.getElementById('login-error').classList.add('d-none');
+    document.getElementById('register-error').classList.add('d-none');
+    document.getElementById('update-pw-error').classList.add('d-none');
 
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.getElementById(`view-${viewId}`).classList.add('active');
-            
-            if(viewId === 'register') document.getElementById('form-register').reset();
-            if(viewId === 'login') document.getElementById('form-login').reset();
-            if(viewId === 'post') document.getElementById('form-post').reset();
-            if(viewId === 'update-pw') document.getElementById('form-update-pw').reset();
+    // 2. Switch the active class
+    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+    document.getElementById(`view-${viewId}`).classList.add('active');
+    
+    // 3. Reset forms
+    if(viewId === 'register') document.getElementById('form-register').reset();
+    if(viewId === 'login') document.getElementById('form-login').reset();
+    if(viewId === 'post') document.getElementById('form-post').reset();
+    if(viewId === 'update-pw') document.getElementById('form-update-pw').reset();
 
-            if(viewId === 'feed') renderFeed();
-        }
+    if(viewId === 'feed') renderFeed();
+
+    // --- NEW: Record this move in the browser history ---
+    // If we aren't already on the feed, push a state so the back button works
+    if (viewId !== 'feed') {
+        history.pushState({ view: viewId }, "");
+    }
+}
 
         // --- 3. Registration Logic (Only 1 time allowed) ---
         document.getElementById('form-register').addEventListener('submit', function(e) {
@@ -584,7 +592,7 @@ document.getElementById('form-post').addEventListener('submit', function(e) {
         updateNav();
         showView('feed'); 
 
-         // --- NEW: Listen for the Mobile Back Button ---
+        // --- NEW: Listen for the Mobile Back Button ---
 window.onpopstate = function(event) {
     // If the user clicks back, always take them to the Feed
     // instead of closing the app.
