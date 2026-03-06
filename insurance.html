@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance support by gigfine</title>
+    <style>
+        * { color: black !important; -webkit-font-smoothing: antialiased; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Inter", sans-serif; }
+        body { background-color: #0d6efd; margin: 0; padding: 15px; }
+        
+        .screen-section {
+            background-color: white; 
+            border-radius: 16px; 
+            padding: 24px;
+            margin: 0 auto;
+            width: 100%; 
+            max-width: 800px; 
+            border: 2px solid black;
+        }
+
+        .header-area { margin-bottom: 24px; border-bottom: 2px solid black; padding-bottom: 10px; }
+        .header-title { font-size: 1.4rem; font-weight: 800; text-transform: uppercase; margin: 0; }
+        .header-tag { font-size: 0.55rem; font-weight: 700; opacity: 0.4; letter-spacing: 2px; text-transform: uppercase; }
+
+        .claim-card {
+            border: 2px solid black;
+            border-radius: 12px; 
+            background: #fff;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-brand { padding: 18px; border-bottom: 2px solid black; background: #f9f9f9; }
+        
+        /* MEDIUM TEXT FORMATTING */
+        .company-name { font-size: 1.25rem; font-weight: 700; display: block; }
+        .insurer-name { font-size: 0.75rem; font-weight: 500; opacity: 0.7; display: block; margin-bottom: 15px; }
+        
+        .price-box { border: 2px solid black; padding: 8px; border-radius: 8px; background: white; }
+        .price-label { font-size: 0.5rem; font-weight: 800; opacity: 0.4; display: block; }
+        .price-value { font-size: 0.9rem; font-weight: 900; }
+
+        .card-content { padding: 18px; }
+        .docs-title { font-size: 0.7rem; font-weight: 800; margin-bottom: 12px; display: block; text-transform: uppercase; }
+        .docs-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px; }
+        .doc-item { font-size: 0.8rem; font-weight: 500; display: flex; align-items: flex-start; line-height: 1.4; }
+        .doc-item::before { content: "•"; margin-right: 8px; font-weight: 900; color: #0d6efd; }
+
+        .btn-container { display: flex; flex-direction: column; gap: 8px; }
+        .btn-gig { padding: 10px; border-radius: 8px; text-align: center; font-weight: 800; text-transform: uppercase; font-size: 0.7rem; text-decoration: none; border: 2px solid black; }
+        .btn-white { background: white; }
+        .btn-blue { background: #0d6efd; color: white !important; border-color: black; }
+    </style>
+</head>
+<body>
+
+    <div class="screen-section">
+        <div class="header-area">
+            <span class="header-tag">gigfine</span>
+            <h1 class="header-title">Insurance Support</h1>
+        </div>
+
+        <div class="claim-card">
+            <div class="card-brand">
+                <span class="company-name">Yango</span>
+                <span class="insurer-name">United Ajod Insurance Limited (UAIL)</span>
+                <div class="price-box">
+                    <span class="price-label">Coverage</span>
+                    <span class="price-value">Rs 300,000 To Rs 1,000,000</span>
+                </div>
+            </div>
+            
+            <div class="card-content">
+                <span class="docs-title">Required Documents</span>
+                <div class="docs-list">
+                    <span class="doc-item">Claim Intimation (within 30 days)</span>
+                    <span class="doc-item">GPA Claim Form (filled, signed & stamped)</span>
+                    <span class="doc-item">Emergency Ticket / OPD Card</span>
+                    <span class="doc-item">Doctor’s Prescription (NMC registered)</span>
+                    <span class="doc-item">Medical Reports</span>
+                    <span class="doc-item">Original Bills</span>
+                    <span class="doc-item">Discharge Summary (if hospitalized)</span>
+                    <span class="doc-item">Police Report</span>
+                    <span class="doc-item">Milapatra (mandatory for road accidents)</span>
+                </div>
+                <div class="btn-container">
+                    <a href="tel:9851406327" class="btn-gig btn-white">Call Helpline</a>
+                    <a href="mailto:rs@unitedajodinsurance.com" class="btn-gig btn-blue">Email Claim</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    
+
+</body>
+</html>
