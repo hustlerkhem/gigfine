@@ -339,7 +339,7 @@
                         <button class="btn btn-primary w-100 py-2 py-md-3 shadow-sm fw-bold fs-5 fs-md-4" onclick="showView('post')">
                             ➕ Share your problem
                         </button>
-                        <button class="btn w-100 py-2 py-md-3 shadow-sm fw-bold fs-5 fs-md-4" style="background-color: #ffc107; border: 2px solid black; color: black !important;" onclick="alert('Claim Insurance feature coming soon!')">
+                        <button class="btn w-100 py-2 py-md-3 shadow-sm fw-bold fs-5 fs-md-4" style="background-color: #ffc107; border: 2px solid black; color: black !important;" onclick="jumpToInsurance()">
                             🛡️ Claim Insurance
                         </button>
                     </div>
@@ -377,30 +377,22 @@
             
         }
 
-       function showView(viewId) {
-    // 1. Hide alerts
-    document.getElementById('login-error').classList.add('d-none');
-    document.getElementById('register-error').classList.add('d-none');
-    document.getElementById('update-pw-error').classList.add('d-none');
+        function showView(viewId) {
+            // Hide alerts every time views change
+            document.getElementById('login-error').classList.add('d-none');
+            document.getElementById('register-error').classList.add('d-none');
+            document.getElementById('update-pw-error').classList.add('d-none');
 
-    // 2. Switch the active class
-    document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-    document.getElementById(`view-${viewId}`).classList.add('active');
-    
-    // 3. Reset forms
-    if(viewId === 'register') document.getElementById('form-register').reset();
-    if(viewId === 'login') document.getElementById('form-login').reset();
-    if(viewId === 'post') document.getElementById('form-post').reset();
-    if(viewId === 'update-pw') document.getElementById('form-update-pw').reset();
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById(`view-${viewId}`).classList.add('active');
+            
+            if(viewId === 'register') document.getElementById('form-register').reset();
+            if(viewId === 'login') document.getElementById('form-login').reset();
+            if(viewId === 'post') document.getElementById('form-post').reset();
+            if(viewId === 'update-pw') document.getElementById('form-update-pw').reset();
 
-    if(viewId === 'feed') renderFeed();
-
-    // --- NEW: Record this move in the browser history ---
-    // If we aren't already on the feed, push a state so the back button works
-    if (viewId !== 'feed') {
-        history.pushState({ view: viewId }, "");
-    }
-}
+            if(viewId === 'feed') renderFeed();
+        }
 
         // --- 3. Registration Logic (Only 1 time allowed) ---
         document.getElementById('form-register').addEventListener('submit', function(e) {
@@ -591,13 +583,12 @@ document.getElementById('form-post').addEventListener('submit', function(e) {
         // --- 9. Initialize App ---
         updateNav();
         showView('feed'); 
-
-        // --- NEW: Listen for the Mobile Back Button ---
-window.onpopstate = function(event) {
-    // If the user clicks back, always take them to the Feed
-    // instead of closing the app.
-    showView('feed');
-};
     </script>
+    <script>
+    function jumpToInsurance() {
+        // This jumps to the insurance page
+        window.location.href = "insurance.html";
+    }
+</script>
 </body>
 </html>
